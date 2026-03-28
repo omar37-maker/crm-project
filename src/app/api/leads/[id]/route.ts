@@ -1,5 +1,6 @@
+import { Role } from "@/generated/prisma/enums";
 import { editLeadSchema, leadIdParamsSchema } from "@/services/lead/schema";
-import { getLead, LeadServiceError, updateLead } from "@/services/lead/service";
+import { deleteLead, getLead, LeadServiceError, updateLead } from "@/services/lead/service";
 import {
   authenticateUser,
   AuthenticationError,
@@ -61,3 +62,19 @@ export async function PATCH(
     );
   }
 }
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const profile = await authenticateUser();
+    const { id } = leadIdParamsSchema.parse(await params);
+    await deleteLead(profile, id);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
+
+

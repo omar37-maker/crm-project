@@ -109,3 +109,20 @@ export async function updateLead(
 
   return result;
 }
+
+export async function deleteLead(profile: Profile, id: string): Promise<void> {
+  const lead = await dbGetLeadById(id);
+
+  if (!lead) {
+    throw new LeadServiceError("Lead not found", 404);
+  }
+
+  if (profile.role === Role.AGENT && lead.assignedToId !== profile.id) {
+    throw new LeadServiceError("Unauthorized", 403);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.activity.deleteMany({ where: { leadId: id } });
+    await tx.lead.delete({ where: { id } });
+  });
+}

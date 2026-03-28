@@ -3,16 +3,16 @@ import { Roboto, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["400", "700"],
-})
+});
 
 export const metadata: Metadata = {
-  title: "CRM Project",
-  description: "A CRM system for managing your leeds", 
+  title: "CRM Pro",
+  description: "A CRM system for managing your leads.",
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${roboto.className}  antialiased`}>{children}</body>
+      <body className={`${roboto.className} antialiased`}>{children}</body>
     </html>
   );
 }

@@ -12,10 +12,12 @@ import {
 
 export function AppShell({
   role,
+  name,
   email,
   children,
 }: {
   role: string;
+  name: string;
   email: string;
   children: ReactNode;
 }) {
@@ -32,9 +34,10 @@ export function AppShell({
             className="hidden h-6 bg-slate-200 sm:block"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-900">
-              Welcome, {formatRoleLabel(role)}!
+            <p className="truncate text-lg font-semibold text-slate-900">
+              Welcome, {formatRoleLabel(role)}! <span className="text-blue-600">{name}</span>
             </p>
+            
             <p className="hidden truncate text-xs text-slate-500 md:block">
               {pageMeta.title} · {pageMeta.description}
             </p>

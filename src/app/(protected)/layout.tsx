@@ -34,7 +34,7 @@ export default async function ProtectedLayout({
     <QueryProvider>
       <SidebarProvider>
         <AppSidebar role={profile.role} user={profile} />
-        <AppShell role={profile.role} email={profile.email}>
+        <AppShell role={profile.role} email={profile.email} name={profile.name}>
           {children}
         </AppShell>
       </SidebarProvider>

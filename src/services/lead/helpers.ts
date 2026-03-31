@@ -1,11 +1,12 @@
-import { ActivityType, Lead } from "@/generated/prisma/client";
+import { ActivityType} from "@/generated/prisma/client";
 import { CreateActivityRequest } from "../activity";
+import { LeadDetail } from "./schema";
 
 interface BuildLeadChangeActivitiesParams {
   leadId: string;
   actorId: string;
-  existingLead: Lead;
-  newLead: Partial<Lead>;
+  existingLead: LeadDetail;
+  newLead: Partial<LeadDetail>;
 }
 export function buildLeadChangeActivities({
   leadId,
@@ -35,6 +36,18 @@ export function buildLeadChangeActivities({
       meta: {
         from: existingLead.stage,
         to: newLead.stage,
+      },
+    });
+  }
+
+  if (newLead.assignedToId !== undefined && newLead.assignedToId !== existingLead.assignedToId) { 
+    activities.push({
+      leadId,
+      actorId,
+      type: ActivityType.ASSIGNMENT_CHANGE,
+      meta: {
+        from: existingLead.assignedTo?.name??"Unassigned",
+        to: newLead.assignedTo?.name??"Unassigned",
       },
     });
   }

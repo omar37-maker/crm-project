@@ -1,6 +1,6 @@
 "use client";
 
-import { Role } from "@/generated/prisma/client";
+import { Profile, Role } from "@/generated/prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetLead } from "@/lib/tanstack/useLeads";
@@ -8,7 +8,7 @@ import { formatLeadDate, StatusBadge } from "@/components/leads/reusable";
 import { Overview } from "./lead-details/Overview";
 import { Timeline } from "./lead-details/Timeline";
 
-export function LeadDetailClient({ id, role }: { id: string; role: Role }) {
+export function LeadDetailClient({ id, role, users }: { id: string; role: Role; users: Profile[] }) {
   const { data, isLoading, isError } = useGetLead(id);
 
   if (isLoading) {
@@ -48,7 +48,7 @@ export function LeadDetailClient({ id, role }: { id: string; role: Role }) {
         </TabsList>
 
         <TabsContent value="overview">
-          <Overview data={data} role={role} />
+          <Overview data={data} role={role} users={users} />
         </TabsContent>
 
         <TabsContent value="timeline">

@@ -316,9 +316,9 @@ export function Overview({ data, role }: { data: LeadDetail; role: Role }) {
                 <p className="text-sm text-muted-foreground">Unassigned</p>
               )}
 
-              {isManagerOrAdmin ? (
+              {isManagerOrAdmin && isEditing ? (
                 <p className="text-sm text-muted-foreground">
-                  Assignment changes will be built in Session 3.
+                  we are now editing
                 </p>
               ) : null}
             </CardContent>

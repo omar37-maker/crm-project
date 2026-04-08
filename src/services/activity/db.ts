@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { CreateAIActivityRequest } from "./schema";
 
 // type CreateActivityData = {
 //   leadId: string;
@@ -60,4 +61,12 @@ export async function dbGetLeadActivities(
     activities,
     total,
   };
+}
+
+export async function dbCreateAIActivity(data: CreateAIActivityRequest) {
+  const activity = await prisma.activity.create({
+    data,
+  });
+
+  return activity;
 }

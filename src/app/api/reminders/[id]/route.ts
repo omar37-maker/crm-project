@@ -22,6 +22,14 @@ export async function PATCH(
       return NextResponse.json({ success: true, data: result });
     }
 
+    if (data.status === "COMPLETED") {
+      const result = await ReminderService.complete(id, {
+        id: profile.id,
+        role: profile.role,
+      });
+      return NextResponse.json({ success: true, data: result });
+    }
+
     return NextResponse.json({ error: "Invalid operation" }, { status: 400 });
   } catch (error) {
     return handleRouteError(error);

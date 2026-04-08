@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { LeadStage, LeadStatus } from "@/generated/prisma/enums";
-import { Role } from "@/generated/prisma/client";
+import { Profile, Role } from "@/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,13 @@ import {
   StatusBadge,
 } from "@/components/leads/reusable";
 import { LeadDetail } from "@/services/lead/schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const leadStatuses = [LeadStatus.OPEN, LeadStatus.WON, LeadStatus.LOST];
 const leadStages = [
@@ -29,7 +36,15 @@ function getFieldClassName() {
   return "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50";
 }
 
-export function Overview({ data, role }: { data: LeadDetail; role: Role }) {
+export function Overview({
+  data,
+  role,
+  users,
+}: {
+  data: LeadDetail;
+  role: Role;
+  users: Profile[];
+}) {
   const editLead = useEditLead(data.id);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -129,6 +144,7 @@ export function Overview({ data, role }: { data: LeadDetail; role: Role }) {
   const selectedName = draft?.name ?? data.name;
   const selectedEmail = draft?.email ?? data.email;
   const selectedPhone = draft?.phone ?? data.phone;
+  const selectedAssignedToId = draft?.assignedToId ?? data.assignedToId;
 
   const isManagerOrAdmin = role === "MANAGER" || role === "ADMIN";
   const canEditContactFields = isManagerOrAdmin;
@@ -317,9 +333,33 @@ export function Overview({ data, role }: { data: LeadDetail; role: Role }) {
               )}
 
               {isManagerOrAdmin && isEditing ? (
-                <p className="text-sm text-muted-foreground">
-                  we are now editing
-                </p>
+                <div>
+                  <Select
+                    value={selectedAssignedToId ?? undefined}
+                    onValueChange={(value) =>
+                      setDraft((currentDraft) => {
+                        if (!currentDraft) {
+                          return null;
+                        }
+                        return {
+                          ...currentDraft,
+                          assignedToId: value,
+                        };
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an agent" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : null}
             </CardContent>
           </Card>

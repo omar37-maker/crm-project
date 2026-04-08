@@ -70,3 +70,19 @@ export function useCancelReminder() {
     },
   });
 }
+
+export function useCompleteReminder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reminderId: string) => {
+      const { data } = await api.patch(`/reminders/${reminderId}`, {
+        status: "COMPLETED",
+      });
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lead-reminders"] });
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+    },
+  });
+}

@@ -7,8 +7,18 @@ import { useGetLead } from "@/lib/tanstack/useLeads";
 import { formatLeadDate, StatusBadge } from "@/components/leads/reusable";
 import { Overview } from "./lead-details/Overview";
 import { Timeline } from "./lead-details/Timeline";
+import { Reminders } from "./lead-details/Reminders";
+import { AI } from "./lead-details/AI";
 
-export function LeadDetailClient({ id, role, users }: { id: string; role: Role; users: Profile[] }) {
+export function LeadDetailClient({
+  id,
+  role,
+  users,
+}: {
+  id: string;
+  role: Role;
+  users: Profile[];
+}) {
   const { data, isLoading, isError } = useGetLead(id);
 
   if (isLoading) {
@@ -42,8 +52,9 @@ export function LeadDetailClient({ id, role, users }: { id: string; role: Role; 
       <Tabs defaultValue="overview" className="space-y-0">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="timeline">Activities</TabsTrigger>
           <TabsTrigger value="reminders">Reminders</TabsTrigger>
+          <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="files">Files</TabsTrigger>
         </TabsList>
 
@@ -56,11 +67,11 @@ export function LeadDetailClient({ id, role, users }: { id: string; role: Role; 
         </TabsContent>
 
         <TabsContent value="reminders">
-          <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">
-              Reminders will be built in a later session.
-            </CardContent>
-          </Card>
+          <Reminders leadId={id} />
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <AI leadId={id} />
         </TabsContent>
 
         <TabsContent value="files">

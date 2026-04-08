@@ -60,6 +60,8 @@ export function Pagination({
   pageCount,
   isLoading,
   setPage,
+  itemLabel,
+  inSmallSpace,
 }: {
   startItem: number;
   endItem: number;
@@ -68,11 +70,18 @@ export function Pagination({
   pageCount: number;
   isLoading: boolean;
   setPage: Dispatch<SetStateAction<number>>;
+  itemLabel?: string;
+  inSmallSpace?: boolean;
 }) {
+  const itemLabelText = itemLabel ?? "leads";
+  const containerPadding = inSmallSpace ? "px-4 py-3" : "px-6 py-4";
+
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className={`flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 ${containerPadding} sm:flex-row sm:items-center sm:justify-between`}
+    >
       <div className="text-sm text-slate-500">
-        Showing {startItem}-{endItem} of {total} leads
+        Showing {startItem}-{endItem} of {total} {itemLabelText}
       </div>
 
       <div className="flex items-center gap-2">

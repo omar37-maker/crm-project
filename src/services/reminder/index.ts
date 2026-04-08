@@ -11,6 +11,7 @@ import {
   listLeadReminders,
   listMyReminders,
   cancelReminder,
+  completeReminder,
 } from "./service";
 
 export const ReminderService = {
@@ -19,6 +20,7 @@ export const ReminderService = {
   listByLead: listLeadReminders,
   listMy: listMyReminders,
   cancel: cancelReminder,
+  complete: completeReminder,
 } as const;
 
 export const ReminderSchema = {

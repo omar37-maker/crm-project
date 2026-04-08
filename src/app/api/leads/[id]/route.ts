@@ -1,6 +1,10 @@
-import { Role } from "@/generated/prisma/enums";
 import { editLeadSchema, leadIdParamsSchema } from "@/services/lead/schema";
-import { deleteLead, getLead, LeadServiceError, updateLead } from "@/services/lead/service";
+import {
+  deleteLead,
+  getLead,
+  LeadServiceError,
+  updateLead,
+} from "@/services/lead/service";
 import {
   authenticateUser,
   AuthenticationError,
@@ -62,6 +66,7 @@ export async function PATCH(
     );
   }
 }
+
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -69,12 +74,23 @@ export async function DELETE(
   try {
     const profile = await authenticateUser();
     const { id } = leadIdParamsSchema.parse(await params);
-    await deleteLead(profile, id);
+    const lead = await deleteLead(profile, id);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, data: lead });
   } catch (error) {
-    return handleRouteError(error);
+    if (
+      error instanceof AuthenticationError ||
+      error instanceof LeadServiceError
+    ) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
-
-

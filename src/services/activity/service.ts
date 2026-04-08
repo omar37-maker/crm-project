@@ -1,8 +1,14 @@
 import { Prisma, Role } from "@/generated/prisma/client";
-import { dbCreateActivities, dbGetLeadActivities } from "./db";
+import {
+  dbCreateActivities,
+  dbCreateAIActivity,
+  dbGetLeadActivities,
+} from "./db";
 import { buildActivityContent } from "./helpers";
 import {
   CreateActivityRequest,
+  CreateAIActivityRequest,
+  createAIActivitySchema,
   createManyActivitiesSchema,
   GetLeadActivitiesRequest,
 } from "./schema";
@@ -23,7 +29,11 @@ export async function createActivities(
 
   const activitiesToCreate: Prisma.ActivityCreateManyInput[] = [];
   for (const activity of validated.data) {
-    const content = buildActivityContent(activity.type, activity.meta);
+    const content = buildActivityContent(
+      activity.type,
+      activity.meta,
+      activity.content,
+    );
     activitiesToCreate.push({
       leadId: activity.leadId,
       actorId: activity.actorId,
@@ -37,6 +47,23 @@ export async function createActivities(
   return {
     success: true as const,
     count: countCreated.count,
+  };
+}
+
+export async function createAIActivity(request: CreateAIActivityRequest) {
+  const validated = createAIActivitySchema.safeParse(request);
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const activity = await dbCreateAIActivity(validated.data);
+
+  return {
+    success: true as const,
+    activity,
   };
 }
 

@@ -17,5 +17,5 @@ export default async function LeadDetailPage({
     },
   });
 
-  return <LeadDetailClient id={id} role={profile.role} />;
+  return <LeadDetailClient id={id} role={profile.role} users={users} />;
 }

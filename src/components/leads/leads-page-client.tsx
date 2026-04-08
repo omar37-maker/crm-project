@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useDeleteLead } from "@/lib/tanstack/useLeads";
 import { Inbox } from "lucide-react";
 
 import { Role } from "@/generated/prisma/client";
@@ -14,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetLeads } from "@/lib/tanstack/useLeads";
+import { useGetLeads, useDeleteLead } from "@/lib/tanstack/useLeads";
 import { CreateLeadDialog } from "@/components/leads/create-lead-dialog";
 import {
   Pagination,
@@ -30,7 +29,7 @@ export function LeadsPageClient({ role }: { role: Role }) {
   const canCreateLead = role !== "AGENT";
 
   const { data, isLoading, isError } = useGetLeads({ page, pageSize });
-  const deleteLead = useDeleteLead()
+  const deleteLead = useDeleteLead();
 
   const leads = data?.leads ?? [];
   const total = data?.pagination.total ?? 0;
@@ -93,9 +92,6 @@ export function LeadsPageClient({ role }: { role: Role }) {
                         Assigned Agent
                       </TableHead>
                     ) : null}
-                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">
-                      Actions
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -140,6 +136,7 @@ export function LeadsPageClient({ role }: { role: Role }) {
                           )}
                         </TableCell>
                       ) : null}
+
                       <TableCell className="px-5 py-4">
                         <Button
                           onClick={() => deleteLead.mutate(lead.id)}
@@ -148,7 +145,6 @@ export function LeadsPageClient({ role }: { role: Role }) {
                           Delete
                         </Button>
                       </TableCell>
-
                     </TableRow>
                   ))}
                 </TableBody>

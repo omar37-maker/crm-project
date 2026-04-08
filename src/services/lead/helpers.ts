@@ -1,4 +1,4 @@
-import { ActivityType} from "@/generated/prisma/client";
+import { ActivityType } from "@/generated/prisma/client";
 import { CreateActivityRequest } from "../activity";
 import { LeadDetail } from "./schema";
 
@@ -40,14 +40,17 @@ export function buildLeadChangeActivities({
     });
   }
 
-  if (newLead.assignedToId !== undefined && newLead.assignedToId !== existingLead.assignedToId) { 
+  if (
+    newLead.assignedToId &&
+    newLead.assignedToId !== existingLead.assignedToId
+  ) {
     activities.push({
       leadId,
       actorId,
       type: ActivityType.ASSIGNMENT_CHANGE,
       meta: {
-        from: existingLead.assignedTo?.name??"Unassigned",
-        to: newLead.assignedTo?.name??"Unassigned",
+        from: existingLead.assignedTo?.name ?? "Unassigned",
+        to: newLead.assignedTo?.name ?? "Unassigned",
       },
     });
   }

@@ -19,7 +19,7 @@ const main = async () => {
     data: {
       id: data.user.id,
       email: "admin@crm.com",
-      name: "Omar Saeed",
+      name: "Hesham El-Mahdi",
       role: "ADMIN",
     },
   });

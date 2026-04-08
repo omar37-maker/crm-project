@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans")}>
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${roboto.className} antialiased`}>{children}</body>
     </html>
   );

@@ -39,7 +39,7 @@ export const listMyRemindersSchema = z.object({
 export type ListMyRemindersRequest = z.infer<typeof listMyRemindersSchema>;
 
 export const updateReminderSchema = z.object({
-  status: z.enum(["CANCELLED"]),
+  status: z.enum(["CANCELLED", "COMPLETED"]),
 });
 
 export type UpdateReminderRequest = z.infer<typeof updateReminderSchema>;

@@ -11,27 +11,42 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCancelReminder, useGetMyReminders } from "@/lib/tanstack/useReminders";
+import {
+  useCancelReminder,
+  useCompleteReminder,
+  useGetMyReminders,
+} from "@/lib/tanstack/useReminders";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
 import { Pagination } from "@/components/leads/reusable";
+import { CreateReminderDialog } from "./CreateReminderDialog";
 
 type FilterTab = "all" | "upcoming" | "overdue" | "completed" | "cancelled";
 
 function getReminderDisplayStatus(status: string, dueAt: string | Date) {
-  if (status === "FIRED") return "completed";
+  if (status === "COMPLETED") return "completed";
   if (status === "CANCELLED") return "cancelled";
+  if (status === "FIRED") return "overdue";
   if (status === "PENDING" && new Date(dueAt) < new Date()) return "overdue";
   return "upcoming";
 }
 
-function ReminderStatusBadge({ status, dueAt }: { status: string; dueAt: string | Date }) {
+function ReminderStatusBadge({
+  status,
+  dueAt,
+}: {
+  status: string;
+  dueAt: string | Date;
+}) {
   const display = getReminderDisplayStatus(status, dueAt);
-  const variantMap: Record<string, "info" | "destructive" | "success" | "outline"> = {
-    upcoming: "info",
+  const variantMap: Record<
+    string,
+    "default" | "destructive" | "ghost" | "outline"
+  > = {
+    upcoming: "default",
     overdue: "destructive",
-    completed: "success",
+    completed: "ghost",
     cancelled: "outline",
   };
   const labelMap: Record<string, string> = {
@@ -46,7 +61,7 @@ function ReminderStatusBadge({ status, dueAt }: { status: string; dueAt: string 
 function getApiStatusForTab(tab: FilterTab): string | undefined {
   switch (tab) {
     case "completed":
-      return "FIRED";
+      return "COMPLETED";
     case "cancelled":
       return "CANCELLED";
     default:
@@ -68,18 +83,22 @@ export function RemindersPageClient() {
 
   const allReminders = data?.reminders ?? [];
 
-  // Client-side filter for upcoming/overdue (both are PENDING in the DB)
+  // Client-side filter for upcoming/overdue (both are PENDING in the DB, plus FIRED for overdue)
   const reminders = allReminders.filter((r) => {
     if (activeTab === "upcoming") {
       return r.status === "PENDING" && new Date(r.dueAt) >= new Date();
     }
     if (activeTab === "overdue") {
-      return r.status === "PENDING" && new Date(r.dueAt) < new Date();
+      return (
+        (r.status === "PENDING" && new Date(r.dueAt) < new Date()) ||
+        r.status === "FIRED"
+      );
     }
     return true;
   });
 
   const cancelReminder = useCancelReminder();
+  const completeReminder = useCompleteReminder();
 
   const total = data?.pagination.total ?? 0;
   const pageCount = data?.pagination.pages ?? 0;
@@ -88,7 +107,9 @@ export function RemindersPageClient() {
 
   // Count overdue for the badge
   const overdueCount = allReminders.filter(
-    (r) => r.status === "PENDING" && new Date(r.dueAt) < new Date()
+    (r) =>
+      (r.status === "PENDING" && new Date(r.dueAt) < new Date()) ||
+      r.status === "FIRED",
   ).length;
 
   function handleTabChange(tab: string) {
@@ -98,13 +119,16 @@ export function RemindersPageClient() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          My Reminders
-        </h1>
-        <p className="text-sm text-slate-500">
-          Keep follow-ups visible so nothing slips between conversations.
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            My Reminders
+          </h1>
+          <p className="text-sm text-slate-500">
+            Keep follow-ups visible so nothing slips between conversations.
+          </p>
+        </div>
+        <CreateReminderDialog />
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -114,7 +138,10 @@ export function RemindersPageClient() {
           <TabsTrigger value="overdue" className="gap-1.5">
             Overdue
             {overdueCount > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-[10px]">
+              <Badge
+                variant="destructive"
+                className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-[10px]"
+              >
                 {overdueCount}
               </Badge>
             )}
@@ -125,9 +152,13 @@ export function RemindersPageClient() {
       </Tabs>
 
       {isLoading ? (
-        <div className="py-12 text-center text-sm text-slate-500">Loading reminders...</div>
+        <div className="py-12 text-center text-sm text-slate-500">
+          Loading reminders...
+        </div>
       ) : isError ? (
-        <div className="py-12 text-center text-sm text-destructive">Failed to load reminders.</div>
+        <div className="py-12 text-center text-sm text-destructive">
+          Failed to load reminders.
+        </div>
       ) : reminders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white/80 p-8 text-center text-sm text-slate-500">
           No reminders found.
@@ -141,18 +172,28 @@ export function RemindersPageClient() {
                 <TableHead>Title</TableHead>
                 <TableHead>Lead</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead className="w-[160px] text-right">Actions</TableHead>
+                <TableHead className="w-[200px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {reminders.map((reminder) => {
-                const displayStatus = getReminderDisplayStatus(reminder.status, reminder.dueAt);
-                const isPending = reminder.status === "PENDING";
+                const displayStatus = getReminderDisplayStatus(
+                  reminder.status,
+                  reminder.dueAt,
+                );
+                const canComplete =
+                  reminder.status === "PENDING" || reminder.status === "FIRED";
+                const canCancel = reminder.status === "PENDING";
                 const isOverdue = displayStatus === "overdue";
 
                 return (
-                  <TableRow key={reminder.id} className={isOverdue ? "bg-red-50/50" : ""}>
-                    <TableCell className={`text-sm ${isOverdue ? "text-red-600 font-medium" : "text-slate-700"}`}>
+                  <TableRow
+                    key={reminder.id}
+                    className={isOverdue ? "bg-red-50/50" : ""}
+                  >
+                    <TableCell
+                      className={`text-sm ${isOverdue ? "font-medium text-red-600" : "text-slate-700"}`}
+                    >
                       {format(new Date(reminder.dueAt), "MMM d, h:mm a")}
                     </TableCell>
                     <TableCell className="text-sm font-medium text-slate-900">
@@ -167,11 +208,25 @@ export function RemindersPageClient() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <ReminderStatusBadge status={reminder.status} dueAt={reminder.dueAt} />
+                      <ReminderStatusBadge
+                        status={reminder.status}
+                        dueAt={reminder.dueAt}
+                      />
                     </TableCell>
                     <TableCell className="text-right">
-                      {isPending && (
-                        <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2">
+                        {canComplete && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs text-green-600 hover:bg-green-50 hover:text-green-700"
+                            onClick={() => completeReminder.mutate(reminder.id)}
+                            disabled={completeReminder.isPending}
+                          >
+                            Complete
+                          </Button>
+                        )}
+                        {canCancel && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -181,8 +236,8 @@ export function RemindersPageClient() {
                           >
                             Cancel
                           </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

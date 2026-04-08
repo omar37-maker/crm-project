@@ -12,6 +12,7 @@ import {
   dbUpdateReminderStatus,
   dbGetLeadReminders,
   dbGetReminderById,
+  dbCompleteReminder,
 } from "./db";
 import { qstash, reminderCallbackUrl } from "@/lib/qstash";
 import { prisma } from "@/lib/prisma";
@@ -159,6 +160,35 @@ export const listMyReminders = async (
     reminders: result.reminders,
     pagination: buildPagination(result.total, request.page, request.pageSize),
   };
+};
+
+export const completeReminder = async (
+  reminderId: string,
+  userSnapshot: UserSnapshot,
+) => {
+  const reminder = await dbGetReminderById(reminderId);
+  if (!reminder) {
+    throw new Error("Reminder not found");
+  }
+
+  if (reminder.status !== "PENDING" && reminder.status !== "FIRED") {
+    throw new Error("Only pending or fired reminders can be completed");
+  }
+
+  if (!validateLeadAccess(reminder.assignedToId, userSnapshot)) {
+    throw new Error("You are not authorized to complete this reminder");
+  }
+
+  // If PENDING, cancel the QStash message to prevent the webhook from firing
+  if (reminder.status === "PENDING" && reminder.qstashMessageId) {
+    try {
+      await qstash.messages.delete(reminder.qstashMessageId);
+    } catch {
+      // QStash message may have already been delivered or expired
+    }
+  }
+
+  return dbCompleteReminder(reminderId);
 };
 
 export const cancelReminder = async (

@@ -18,7 +18,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCreateLeadReminder } from "@/lib/tanstack/useReminders";
+import { useGetLeads } from "@/lib/tanstack/useLeads";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
@@ -29,17 +37,28 @@ function mergeDateAndTime(date: Date, hours: number, minutes: number): Date {
   return d;
 }
 
-export function CreateReminderDialog({ leadId }: { leadId: string }) {
+export function CreateReminderDialog({ leadId }: { leadId?: string }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [selectedLeadId, setSelectedLeadId] = useState(leadId ?? "");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [timeValue, setTimeValue] = useState("10:00");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [error, setError] = useState("");
-  const createReminder = useCreateLeadReminder(leadId);
+
+  const effectiveLeadId = leadId ?? selectedLeadId;
+  const createReminder = useCreateLeadReminder(effectiveLeadId);
+
+  // Only fetch leads when no leadId is provided (for the lead selector)
+  const { data: leadsData } = useGetLeads({
+    page: 1,
+    pageSize: 100,
+  });
+  const leads = leadsData?.leads ?? [];
 
   function resetForm() {
     setTitle("");
+    if (!leadId) setSelectedLeadId("");
     setSelectedDate(new Date());
     setTimeValue("10:00");
     setError("");
@@ -59,6 +78,11 @@ export function CreateReminderDialog({ leadId }: { leadId: string }) {
       return;
     }
 
+    if (!effectiveLeadId) {
+      setError("Please select a lead");
+      return;
+    }
+
     const [h, m] = timeValue.split(":").map(Number);
     const dueAt = mergeDateAndTime(selectedDate, h, m);
 
@@ -71,7 +95,7 @@ export function CreateReminderDialog({ leadId }: { leadId: string }) {
       await createReminder.mutateAsync({
         title: title.trim(),
         dueAt,
-        leadId,
+        leadId: effectiveLeadId,
       });
       resetForm();
       setOpen(false);
@@ -106,6 +130,30 @@ export function CreateReminderDialog({ leadId }: { leadId: string }) {
               disabled={createReminder.isPending}
             />
           </div>
+
+          {!leadId && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                Lead <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={selectedLeadId}
+                onValueChange={setSelectedLeadId}
+                disabled={createReminder.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a lead" />
+                </SelectTrigger>
+                <SelectContent>
+                  {leads.map((lead) => (
+                    <SelectItem key={lead.id} value={lead.id}>
+                      {lead.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

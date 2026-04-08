@@ -99,6 +99,17 @@ export const dbGetLeadReminders = async (
   return { reminders, total };
 };
 
+export const dbCompleteReminder = async (
+  reminderId: string,
+  tx?: Prisma.TransactionClient,
+) => {
+  const client = tx ?? prisma;
+  return client.reminder.update({
+    where: { id: reminderId },
+    data: { status: "COMPLETED" },
+  });
+};
+
 export const dbGetReminderById = async (reminderId: string) => {
   return prisma.reminder.findUnique({
     where: { id: reminderId },

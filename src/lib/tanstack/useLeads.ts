@@ -33,6 +33,21 @@ export function useCreateLead() {
   });
 }
 
+export function useDeleteLead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<string> => {
+      await api.delete(`/leads/${id}`);
+      return id;
+    },
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead", id] });
+    },
+  });
+}
+
 export function useGetLead(id: string) {
   return useQuery({
     queryKey: ["lead", id],
@@ -60,17 +75,4 @@ export function useEditLead(id: string) {
       });
     },
   });
-}
-
-export function useDeleteLead() { 
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string): Promise<void> => { 
-      await api.delete(`/leads/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
-    }
-    
-  })
 }

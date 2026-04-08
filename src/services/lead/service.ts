@@ -1,6 +1,12 @@
 import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
 import { CreateLeadRequest, EditLeadRequest, ListLeadsParams } from "./schema";
-import { dbCreateLead, dbGetLeadById, dbListLeads, dbUpdateLead } from "./db";
+import {
+  dbCreateLead,
+  dbDeleteLead,
+  dbGetLeadById,
+  dbListLeads,
+  dbUpdateLead,
+} from "./db";
 import { buildLeadChangeActivities } from "./helpers";
 import { canEditLeadAssignment, canEditLeadContactFields } from "./permissions";
 import { ActivityService } from "../activity";
@@ -88,7 +94,7 @@ export async function updateLead(
     throw new LeadServiceError("Unauthorized", 403);
   }
 
-  if (!canEditLeadAssignment(profile.role, data)) { 
+  if (!canEditLeadAssignment(profile.role, data)) {
     throw new LeadServiceError("Unauthorized", 403);
   }
 
@@ -114,19 +120,16 @@ export async function updateLead(
   return result;
 }
 
-export async function deleteLead(profile: Profile, id: string): Promise<void> {
-  const lead = await dbGetLeadById(id);
+export async function deleteLead(profile: Profile, id: string) {
+  const existingLead = await dbGetLeadById(id);
 
-  if (!lead) {
+  if (!existingLead) {
     throw new LeadServiceError("Lead not found", 404);
   }
 
-  if (profile.role === Role.AGENT && lead.assignedToId !== profile.id) {
+  if (profile.role === Role.AGENT && existingLead.assignedToId !== profile.id) {
     throw new LeadServiceError("Unauthorized", 403);
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.activity.deleteMany({ where: { leadId: id } });
-    await tx.lead.delete({ where: { id } });
-  });
+  return dbDeleteLead(id);
 }

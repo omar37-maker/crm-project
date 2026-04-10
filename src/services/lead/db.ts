@@ -109,13 +109,3 @@ export async function dbUpdateLead(
 
   return updatedLead;
 }
-
-export async function dbDeleteLead(id: string) {
-  return prisma.$transaction(async (tx) => {
-    await tx.activity.deleteMany({ where: { leadId: id } });
-    return tx.lead.delete({
-      where: { id },
-      select: leadDetailSelect,
-    });
-  });
-}

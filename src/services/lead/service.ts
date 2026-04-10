@@ -1,12 +1,6 @@
 import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
 import { CreateLeadRequest, EditLeadRequest, ListLeadsParams } from "./schema";
-import {
-  dbCreateLead,
-  dbDeleteLead,
-  dbGetLeadById,
-  dbListLeads,
-  dbUpdateLead,
-} from "./db";
+import { dbCreateLead, dbGetLeadById, dbListLeads, dbUpdateLead } from "./db";
 import { buildLeadChangeActivities } from "./helpers";
 import { canEditLeadAssignment, canEditLeadContactFields } from "./permissions";
 import { ActivityService } from "../activity";
@@ -118,18 +112,4 @@ export async function updateLead(
   });
 
   return result;
-}
-
-export async function deleteLead(profile: Profile, id: string) {
-  const existingLead = await dbGetLeadById(id);
-
-  if (!existingLead) {
-    throw new LeadServiceError("Lead not found", 404);
-  }
-
-  if (profile.role === Role.AGENT && existingLead.assignedToId !== profile.id) {
-    throw new LeadServiceError("Unauthorized", 403);
-  }
-
-  return dbDeleteLead(id);
 }

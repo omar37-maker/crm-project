@@ -26,7 +26,7 @@ const mainSidebarItems = [
   { label: "Reminders", href: "/reminders", icon: Calendar },
 ];
 
-const adminSidebarItems = [{ label: "Users", href: "/users", icon: User }];
+const adminSidebarItems = [{ label: "Users", href: "/admin/users", icon: User }];
 
 export function AppSidebar({ role, user }: { role: Role; user: Profile }) {
   const pathname = usePathname();

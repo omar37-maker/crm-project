@@ -1,9 +1,10 @@
-import { LeadServiceError } from "@/services/lead/service";
+import { deleteLead, LeadServiceError } from "@/services/lead/service";
 import { NotificationServiceError } from "@/services/notification/service";
-import { AuthenticationError } from "./authenticateUser";
+import { authenticateUser, AuthenticationError } from "./authenticateUser";
 import { ZodError } from "zod";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { AdminServiceError } from "@/services/admin/service";
+import { leadIdParamsSchema } from "@/services/lead/schema";
 
 export const handleRouteError = (error: unknown) => {
   if (
@@ -29,3 +30,18 @@ export const handleRouteError = (error: unknown) => {
 
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 };
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const profile = await authenticateUser();
+    const { id } = leadIdParamsSchema.parse(await params);
+    const lead = await deleteLead(profile, id);
+
+    return NextResponse.json({ success: true, data: lead });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}

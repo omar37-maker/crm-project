@@ -139,9 +139,8 @@ export async function updateUserById(
   targetUserId: string,
   data: UpdateUserSchema,
 ) {
-  // Prevent self role change only.
-  // Admins may still update their own name, but cannot demote/promote themselves.
-  if (adminId === targetUserId && data.role !== undefined) {
+  // Prevent self-modification
+  if (adminId === targetUserId) {
     throw new AdminServiceError("You cannot change your own role", 400);
   }
 

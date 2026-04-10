@@ -109,3 +109,18 @@ export async function dbUpdateLead(
 
   return updatedLead;
 }
+
+export async function dbDeleteLead(id: string) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.activity.deleteMany({ where: { leadId: id } });
+      return tx.lead.delete({
+        where: { id },
+        select: leadDetailSelect,
+      });
+    });
+  } catch (error) {
+    console.error("DB DELETE LEAD ERROR:", error);
+    throw error;
+  }
+}

@@ -17,7 +17,7 @@ import { useLogCallAttempt } from "@/lib/tanstack/useActivities";
 import { useGenerateCallFollowup } from "@/lib/tanstack/useAI";
 import { useCreateLeadReminder } from "@/lib/tanstack/useReminders";
 import { CallOutcome } from "@/services/activity";
-// import { FollowupReview } from "./FollowupReview";
+import { FollowupReview } from "./FollowupReview";
 import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
 
 function getTextAreaClassName() {
@@ -249,9 +249,9 @@ export function LogCallDialog({ leadId }: { leadId: string }) {
               </AlertDescription>
             </Alert>
 
-            {/* <div className="max-h-[50vh] overflow-y-auto">
+            <div className="max-h-[50vh] overflow-y-auto">
               <FollowupReview followup={generateFollowup.data} />
-            </div> */}
+            </div>
 
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

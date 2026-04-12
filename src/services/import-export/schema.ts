@@ -29,9 +29,9 @@ export const importRequestSchema = z.object({
 
 export type ImportRequest = z.infer<typeof importRequestSchema>;
 
-// ------------------------------------------------------------------
+
 // VALIDATION RESULT
-// ------------------------------------------------------------------
+
 // One result per row — tells the UI whether the row is valid
 // and what errors it has.
 export interface RowValidationResult {
@@ -41,9 +41,8 @@ export interface RowValidationResult {
   errors: Record<string, string[]> | null;
 }
 
-// ------------------------------------------------------------------
+
 // IMPORT SUMMARY
-// ------------------------------------------------------------------
 // Returned by the server after processing the import.
 export interface ImportSummary {
   importedCount: number;

@@ -171,7 +171,7 @@ export function UserActions({ user }: { user: User }) {
           }
         }}
       >
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm ">
           <DialogHeader>
             <DialogTitle>Edit user</DialogTitle>
             <DialogDescription>

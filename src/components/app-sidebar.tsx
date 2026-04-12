@@ -1,7 +1,14 @@
 "use client";
 
 import { Profile, Role } from "@/generated/prisma/client";
-import { Calendar, LayoutDashboard, User, Users } from "lucide-react";
+import {
+  Calendar,
+  Download,
+  LayoutDashboard,
+  Upload,
+  User,
+  Users,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +33,10 @@ const mainSidebarItems = [
   { label: "Reminders", href: "/reminders", icon: Calendar },
 ];
 
-const adminSidebarItems = [{ label: "Users", href: "/admin/users", icon: User }];
+const adminSidebarItems = [
+  { label: "Users", href: "/admin/users", icon: User },
+  { label: "Import Leads", href: "/admin/import", icon: Upload },
+];
 
 export function AppSidebar({ role, user }: { role: Role; user: Profile }) {
   const pathname = usePathname();

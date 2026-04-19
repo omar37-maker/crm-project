@@ -12,7 +12,9 @@ export function buildActivityContent(
 ) {
   if (
     activityType === ActivityType.NOTE ||
-    activityType === ActivityType.CALL_ATTEMPT
+    activityType === ActivityType.CALL_ATTEMPT ||
+    activityType === ActivityType.ATTACHMENT_ADDED ||
+    activityType === ActivityType.ATTACHMENT_DELETED
   ) {
     return content ?? null;
   }

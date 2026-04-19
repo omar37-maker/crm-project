@@ -1,13 +1,7 @@
-"use client";
+"use client"
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import supabase from "@/lib/supabase/client";
@@ -22,25 +16,25 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async (e: React.SubmitEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
-      password,
-    });
+      password
+    })
 
     if (authError) {
-      setError(authError.message);
-      setLoading(false);
-      return;
+      setError(authError.message)
+      setLoading(false)
+      return
     }
 
     router.push("/dashboard");
-    router.refresh();
-    setLoading(false);
-  };
+    router.refresh()
+    setLoading(false)
+  }
 
   return (
     <div className="flex justify-center items-center h-screen w-screen">
@@ -54,11 +48,7 @@ export default function Login() {
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
                 disabled={loading}
@@ -68,11 +58,7 @@ export default function Login() {
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="Your password"
                 required
                 disabled={loading}
@@ -81,9 +67,7 @@ export default function Login() {
 
             {/* Error Message */}
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button className="w-full" type="submit">
-              Login
-            </Button>
+            <Button className="w-full" type="submit">Login</Button>
           </form>
         </CardContent>
       </Card>

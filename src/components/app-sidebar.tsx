@@ -36,6 +36,7 @@ const mainSidebarItems = [
 const adminSidebarItems = [
   { label: "Users", href: "/admin/users", icon: User },
   { label: "Import Leads", href: "/admin/import", icon: Upload },
+  { label: "Export Leads", href: "/admin/export", icon: Download },
 ];
 
 export function AppSidebar({ role, user }: { role: Role; user: Profile }) {

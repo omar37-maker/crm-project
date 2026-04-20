@@ -1,9 +1,12 @@
 import { csvLeadRowSchema, importRequestSchema } from "./schema";
-import { processImport } from "./service";
+import { processExport, processImport } from "./service";
 
 export const ImportExportService = {
   import: {
     process: processImport,
+  },
+  export: {
+    process: processExport,
   },
 };
 

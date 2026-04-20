@@ -11,7 +11,7 @@ export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
-  }) {
+}) {
   // Check authentication
   const supabase = await createSupabaseServerClient();
   const {
@@ -30,15 +30,15 @@ export default async function ProtectedLayout({
     await supabase.auth.signOut();
     redirect("/login");
   }
-  
+
   return (
     <QueryProvider>
       <SidebarProvider>
         <AppSidebar role={profile.role} user={profile} />
-        <AppShell role={profile.role} name={profile.name} email={profile.email}>
+        <AppShell role={profile.role} email={profile.email}>
           {children}
         </AppShell>
-        <Toaster/>
+        <Toaster />
       </SidebarProvider>
     </QueryProvider>
   );

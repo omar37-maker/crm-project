@@ -7,9 +7,9 @@ import type { AttachmentListItem } from "@/services/attachments";
 const attachmentsQueryKey = (leadId: string) =>
   ["attachments", leadId] as const;
 
-
+// ------------------------------------------------------------------
 // LIST (Query)
-
+// ------------------------------------------------------------------
 export function useAttachments(leadId: string) {
   return useQuery<AttachmentListItem[]>({
     queryKey: attachmentsQueryKey(leadId),
@@ -24,9 +24,9 @@ export function useAttachments(leadId: string) {
   });
 }
 
-
+// ------------------------------------------------------------------
 // UPLOAD (Mutation)
-
+// ------------------------------------------------------------------
 export function useUploadAttachment(leadId: string) {
   const queryClient = useQueryClient();
 
@@ -55,9 +55,9 @@ export function useUploadAttachment(leadId: string) {
   });
 }
 
-
+// ------------------------------------------------------------------
 // DELETE (Mutation)
-
+// ------------------------------------------------------------------
 export function useDeleteAttachment(leadId: string) {
   const queryClient = useQueryClient();
 

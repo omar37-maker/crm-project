@@ -1,6 +1,13 @@
 "use client";
 import { useImport } from "@/lib/tanstack/useImportExport";
-import { AlertCircle, CheckCircle2, Download, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Download,
+  Upload,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -20,12 +27,16 @@ import {
   validateRows,
 } from "@/services/import-export/helpers";
 
+const PREVIEW_ROW_LIMIT = 10;
+const PREVIEW_AUTO_COLLAPSE_THRESHOLD = 50;
+
 type ImportState = "idle" | "parsing" | "validated" | "importing";
 
 export function CSVImporter() {
   const [state, setState] = useState<ImportState>("idle");
   const [results, setResults] = useState<RowValidationResult[]>([]);
-  const { mutate: importCSV, isPending } = useImport();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+  const { mutate: importCSV } = useImport();
 
   // --- File selection handler ---
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -45,6 +56,9 @@ export function CSVImporter() {
 
       const validCount = validationResults.filter((r) => r.valid).length;
       const invalidCount = validationResults.filter((r) => !r.valid).length;
+      setIsPreviewOpen(
+        validCount > 0 && validCount <= PREVIEW_AUTO_COLLAPSE_THRESHOLD,
+      );
       toast.info(
         `Parsed ${validationResults.length} rows: ${validCount} valid, ${invalidCount} invalid`,
       );
@@ -106,8 +120,10 @@ export function CSVImporter() {
   }
 
   // --- Computed values ---
-  const validCount = results.filter((r) => r.valid).length;
-  const invalidCount = results.filter((r) => !r.valid).length;
+  const validResults = results.filter((r) => r.valid && r.data !== null);
+  const validCount = validResults.length;
+  const invalidCount = results.length - validCount;
+  const previewRows = validResults.slice(0, PREVIEW_ROW_LIMIT);
 
   return (
     <div className="space-y-6">
@@ -161,6 +177,75 @@ export function CSVImporter() {
             )}
             <Badge variant="outline">{results.length} total rows</Badge>
           </div>
+
+          {/* Valid rows preview */}
+          {validCount > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-green-700">
+                  Preview valid rows ({validCount})
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsPreviewOpen((open) => !open)}
+                >
+                  {isPreviewOpen ? (
+                    <>
+                      <ChevronDown className="mr-1 h-4 w-4" />
+                      Hide
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight className="mr-1 h-4 w-4" />
+                      Show
+                    </>
+                  )}
+                </Button>
+              </div>
+              {isPreviewOpen && (
+                <div className="rounded-md border max-h-72 overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Row</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Assignee Email</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {previewRows.map((r) => (
+                        <TableRow key={r.rowNumber}>
+                          <TableCell className="font-mono text-xs">
+                            {r.rowNumber}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {r.data!.phone}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {r.data!.name}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {r.data!.email}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {r.data!.assigneeEmail ?? "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {validCount > PREVIEW_ROW_LIMIT && (
+                    <p className="border-t bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                      Showing {PREVIEW_ROW_LIMIT} of {validCount} valid rows
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Invalid rows table */}
           {invalidCount > 0 && (

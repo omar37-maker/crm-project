@@ -1,6 +1,8 @@
-import { Profile } from "@/generated/prisma/client";
+import { Prisma, Profile, Role } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
 import { LeadService } from "../lead";
 import { dbFindProfileByEmail } from "./db";
+import { buildCSVString } from "./helpers";
 import { CSVLeadRow, ImportSummary } from "./schema";
 
 export async function processImport(
@@ -59,4 +61,45 @@ export async function processImport(
     totalProcessed: rows.length,
     errors,
   };
+}
+
+export async function processExport(profile: Profile): Promise<string> {
+  // Agents can only export leads assigned to them.
+  // Managers and admins export every lead.
+  const where: Prisma.LeadWhereInput =
+    profile.role === Role.AGENT ? { assignedToId: profile.id } : {};
+
+  const leads = await prisma.lead.findMany({
+    where,
+    select: {
+      phone: true,
+      name: true,
+      email: true,
+      assignedTo: { select: { email: true } },
+      stage: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const rows = leads.map((lead) => ({
+    phone: lead.phone,
+    name: lead.name,
+    email: lead.email ?? "",
+    assigneeEmail: lead.assignedTo?.email ?? "",
+    stage: lead.stage,
+    status: lead.status,
+    createdAt: lead.createdAt.toISOString(),
+  }));
+
+  return buildCSVString(rows, [
+    "phone",
+    "name",
+    "email",
+    "assigneeEmail",
+    "stage",
+    "status",
+    "createdAt",
+  ]);
 }

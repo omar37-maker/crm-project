@@ -1,10 +1,5 @@
 import { editLeadSchema, leadIdParamsSchema } from "@/services/lead/schema";
-import {
-  deleteLead,
-  getLead,
-  LeadServiceError,
-  updateLead,
-} from "@/services/lead/service";
+import { getLead, LeadServiceError, updateLead } from "@/services/lead/service";
 import {
   authenticateUser,
   AuthenticationError,
@@ -57,34 +52,6 @@ export async function PATCH(
           error: error.flatten().fieldErrors,
         },
         { status: 400 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
-
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const profile = await authenticateUser();
-    const { id } = leadIdParamsSchema.parse(await params);
-    const lead = await deleteLead(profile, id);
-
-    return NextResponse.json({ success: true, data: lead });
-  } catch (error) {
-    if (
-      error instanceof AuthenticationError ||
-      error instanceof LeadServiceError
-    ) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode },
       );
     }
 

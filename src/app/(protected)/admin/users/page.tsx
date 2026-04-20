@@ -1,29 +1,29 @@
-import UsersPageClient from "@/components/admin/users-page-client";
-import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import UsersPageClient from "@/components/admin/users-page-client";
 
+export default async function AdminUsersPage() {
+  // Check authentication
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
+  // Fetch the user profile
+  const profile = await prisma.profile.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
 
-export default async function AdminUserPage() {
-    const supabase = await createSupabaseServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) redirect("/login")
-    
-    const profile = await prisma.profile.findUnique({
-        where: {
-            id: user.id
-        }
-    })
+  if (!profile || !profile.isActive) {
+    await supabase.auth.signOut();
+    redirect("/login");
+  }
 
-    if (!profile || !profile.isActive) {
-        
-        await supabase.auth.signOut()
-        redirect("/login")
-    }
+  if (profile.role !== "ADMIN") redirect("/dashboard");
 
-    if (profile.role !== "ADMIN") redirect("/dashboard")
-    
-    return(<UsersPageClient/>)
+  return <UsersPageClient />;
 }

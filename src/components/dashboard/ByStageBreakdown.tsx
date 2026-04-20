@@ -1,16 +1,24 @@
-import { DashboardData } from "@/services/dashboard"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { BarChart, XAxis, Bar, CartesianGrid } from "recharts"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
+import { DashboardData } from "@/services/dashboard";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { BarChart, XAxis, Bar, CartesianGrid } from "recharts";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "../ui/chart";
 
-const ByStageBreakdown = ({ data }: { data: DashboardData["totalLeadsByStage"] }) => {
-
+const ByStageBreakdown = ({
+  data,
+}: {
+  data: DashboardData["totalLeadsByStage"];
+}) => {
   const chartConfig = {
     stage: {
       label: "Stage",
       color: "var(--chart-1)",
     },
-  } satisfies ChartConfig
+  } satisfies ChartConfig;
 
   return (
     <Card>
@@ -36,6 +44,6 @@ const ByStageBreakdown = ({ data }: { data: DashboardData["totalLeadsByStage"] }
         </ChartContainer>
       </CardContent>
     </Card>
-  )
-}
-export default ByStageBreakdown
+  );
+};
+export default ByStageBreakdown;

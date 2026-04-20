@@ -32,8 +32,9 @@ export class AttachmentServiceError extends Error {
   }
 }
 
-
+// ------------------------------------------------------------------
 // LIST FOR LEAD
+// ------------------------------------------------------------------
 /**
  * List every attachment for a lead, with a fresh signed download
  * URL on each row. URLs are regenerated on every call.
@@ -129,9 +130,9 @@ export async function uploadForLead(input: {
   }
 }
 
-
+// ------------------------------------------------------------------
 // DELETE FOR LEAD
-
+// ------------------------------------------------------------------
 /**
  * Delete an attachment that belongs to a specific lead. Storage object
  * is removed first (the harder operation to undo), then the DB row +

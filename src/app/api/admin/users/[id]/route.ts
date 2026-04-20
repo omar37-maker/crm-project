@@ -1,3 +1,5 @@
+// GET /api/admin/users/[id] — Get a single user
+
 import { AdminSchema, AdminService } from "@/services/admin";
 import { authenticateUser } from "@/utils/authenticateUser";
 import { handleRouteError } from "@/utils/handleRouteError";

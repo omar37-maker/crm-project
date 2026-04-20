@@ -44,7 +44,7 @@ export async function generateLeadBrief(leadId: string, user: Profile) {
   });
 
   const { output } = await generateText({
-    model: " deepseek/deepseek-v3.2-thinking",
+    model: "deepseek/deepseek-v3.2-thinking",
     output: Output.object({ schema: leadBriefSchema }),
     prompt,
   });

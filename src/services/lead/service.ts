@@ -1,12 +1,11 @@
 import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
-import { CreateLeadRequest, EditLeadRequest, ListLeadsParams } from "./schema";
 import {
-  dbCreateLead,
-  dbDeleteLead,
-  dbGetLeadById,
-  dbListLeads,
-  dbUpdateLead,
-} from "./db";
+  CreateLeadRequest,
+  EditLeadRequest,
+  ListLeadsParams,
+  ReassignLeadsRequest,
+} from "./schema";
+import { dbCreateLead, dbGetLeadById, dbListLeads, dbUpdateLead } from "./db";
 import { buildLeadChangeActivities } from "./helpers";
 import { canEditLeadAssignment, canEditLeadContactFields } from "./permissions";
 import { ActivityService } from "../activity";
@@ -120,16 +119,64 @@ export async function updateLead(
   return result;
 }
 
-export async function deleteLead(profile: Profile, id: string) {
-  const existingLead = await dbGetLeadById(id);
+export async function reassignLeads(
+  actor: Profile,
+  data: ReassignLeadsRequest,
+) {
+  const { leadIds, assignToId } = data;
 
-  if (!existingLead) {
-    throw new LeadServiceError("Lead not found", 404);
+  // Target must be an active agent. Reassigning to a deactivated user
+  // or to a manager/admin is rejected.
+  const targetAgent = await prisma.profile.findFirst({
+    where: {
+      id: assignToId,
+      role: Role.AGENT,
+      isActive: true,
+    },
+    select: { id: true, name: true },
+  });
+
+  if (!targetAgent) {
+    throw new LeadServiceError("Target agent not found", 404);
   }
 
-  if (profile.role === Role.AGENT && existingLead.assignedToId !== profile.id) {
-    throw new LeadServiceError("Unauthorized", 403);
+  // All leads must exist. A bogus id in the batch fails the entire
+  // operation rather than silently reassigning the rest. We also need
+  // the current assignee name so each ASSIGNMENT_CHANGE activity can
+  // record its from/to.
+  const existing = await prisma.lead.findMany({
+    where: { id: { in: leadIds } },
+    select: {
+      id: true,
+      assignedTo: { select: { name: true } },
+    },
+  });
+
+  if (existing.length !== leadIds.length) {
+    throw new LeadServiceError("One or more leads not found", 404);
   }
 
-  return dbDeleteLead(id);
+  await prisma.$transaction(async (tx) => {
+    await tx.lead.updateMany({
+      where: { id: { in: leadIds } },
+      data: { assignedToId: assignToId },
+    });
+
+    const activities = existing.map((lead) => ({
+      leadId: lead.id,
+      actorId: actor.id,
+      type: ActivityType.ASSIGNMENT_CHANGE,
+      meta: {
+        from: lead.assignedTo?.name ?? "Unassigned",
+        to: targetAgent.name,
+      },
+    }));
+
+    const result = await ActivityService.create(activities, tx);
+    if (!result.success) {
+      throw new Error("Failed to create reassignment activities");
+    }
+  });
+
+  return { count: leadIds.length };
 }

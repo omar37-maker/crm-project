@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import { LeadStage, LeadStatus } from "@/generated/prisma/enums";

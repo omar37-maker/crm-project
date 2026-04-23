@@ -44,7 +44,7 @@ const main = async () => {
 
     console.log(`Agent user created: ${data.user.id}`);
 
-    const admin = await prisma.profile.create({
+    await prisma.profile.create({
       data: {
         id: data.user.id,
         email: agent.email,
